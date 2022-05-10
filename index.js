@@ -1,54 +1,59 @@
 const fs = require('fs');
+const sortedByGenrefunc = require('./functions').sortedByGenrefunc;
+const sortedByLastNameFunc = require('./functions').sortedByLastNameFunc;
+const sortedByBirthdayFunc = require('./functions').sortedByBirthdayFunc;
+const textBuildFunc = require('./functions').textBuildFunc;
+const textWriteFunc = require('./functions').textWriteFunc;
 
-fs.readFile('./code-test-input-files/comma.txt', 'utf8', (err, data) => {
-  if (err) {
-    console.error(err);
-    return;
+const readline = require('readline').createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+readline.question('specify separator', (name) => {
+  console.log(`This is the separator: ${name}!`);
+  readline.close(name);
+  const separator = name;
+  let x;
+  switch (name) {
+    case ',':
+      x = 'comma';
+      break;
+    case '|':
+      x = 'pipe';
+      break;
+    case ' ':
+      x = 'space';
+      break;
+    default:
+      x = 'space';
+      break;
   }
-  //////////////////////Seting of Functions//////////////////////
-  const splitingByLinefunc = (text) => {
-    return text?.split('\n').map((x) => x.split(','));
-  };
 
-  let array = splitingByLinefunc(data);
+  const pathOfFile = `./code-test-input-files/${x}.txt`;
 
-  const sortedByGenrefunc = (arr) => {
-    return arr?.slice()?.sort((a, b) => (a[3] > b[3] ? 1 : -1));
-  };
+  fs.readFile(pathOfFile, 'utf8', (err, data) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    const splitingByLinefunc = (text) => {
+      return text?.split('\n').map((x) => x.split(separator));
+    };
 
-  const sortedByLastNameFunc = (arr, orderDirection) => {
-    let result =
-      orderDirection === 'descending'
-        ? arr?.slice()?.sort((a, b) => (a[0] < b[0] ? 1 : -1))
-        : arr?.slice()?.sort((a, b) => (a[0] > b[0] ? 1 : -1));
-    return result;
-  };
-  const sortedByBirthdayFunc = (arr) => {
-    return arr
-      ?.slice()
-      ?.sort((a, b) => (new Date(a[4]).getTime() > new Date(b[4]).getTime() ? 1 : -1));
-  };
+    let array = splitingByLinefunc(data);
 
-  const textBuildFunc = (arr) => {
-    return arr.map((x) => x.join()).join('\n');
-  };
+    const Sort1 = textBuildFunc(sortedByGenrefunc(sortedByBirthdayFunc(array)), name);
 
-  const textWriteFunc = (text, path) => {
-    fs.writeFile(path, text, (err) => {
-      if (err) {
-        console.error(err);
-      }
-      console.log('Sorted file generated at' + path);
-    });
-  };
+    const Sort2 = textBuildFunc(
+      sortedByLastNameFunc(sortedByBirthdayFunc(array, 'ascending')),
+      name
+    );
 
-  //////////////////////Sort and Write of files//////////////////////
+    const Sort3 = textBuildFunc(sortedByLastNameFunc(array, 'descending'), name);
 
-  const Sort1 = textBuildFunc(sortedByGenrefunc(sortedByBirthdayFunc(array)));
-  const Sort2 = textBuildFunc(sortedByLastNameFunc(sortedByBirthdayFunc(array)));
-  const Sort3 = textBuildFunc(sortedByLastNameFunc(array, 'descending'));
-
-  textWriteFunc(Sort1, './code-test-input-files/Sort1.txt');
-  textWriteFunc(Sort2, './code-test-input-files/Sort2.txt');
-  textWriteFunc(Sort3, './code-test-input-files/Sort3.txt');
+    textWriteFunc(Sort1, './code-test-input-files/Sort1.txt');
+    textWriteFunc(Sort2, './code-test-input-files/Sort2.txt');
+    textWriteFunc(Sort3, './code-test-input-files/Sort3.txt');
+  });
 });
